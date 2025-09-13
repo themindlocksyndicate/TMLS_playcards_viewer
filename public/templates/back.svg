@@ -1,0 +1,11 @@
+<svg viewBox="0 0 744 1039" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#1a1a1a"/>
+      <stop offset="1" stop-color="#000000"/>
+    </linearGradient>
+  </defs>
+  <rect width="744" height="1039" rx="40" fill="url(#g)" stroke="#444" stroke-width="4"/>
+  <text x="372" y="520" text-anchor="middle" fill="#d4af37" font-size="64" font-weight="800" font-family="serif">TMLS</text>
+  <text x="372" y="580" text-anchor="middle" fill="#b48c2b" font-size="20" font-family="serif">Card Back</text>
+</svg>

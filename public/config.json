@@ -1,0 +1,19 @@
+{
+  "decks": [
+    {
+      "id": "main",
+      "name": "Main Deck",
+      "base": "./"
+    },
+    {
+      "id": "exp",
+      "name": "Experimental (sample)",
+      "base": "./"
+    }
+  ],
+  "defaultDeck": "main",
+  "templates": {
+    "frontSvg": "./templates/front.svg",
+    "backSvg": "./templates/back.svg"
+  }
+}
