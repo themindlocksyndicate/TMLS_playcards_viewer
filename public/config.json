@@ -3,12 +3,7 @@
     {
       "id": "main",
       "name": "Main Deck",
-      "base": "https://github.com/themindlocksyndicate/TMLS_playcards_datasets"
-    },
-    {
-      "id": "exp",
-      "name": "Experimental (sample)",
-      "base": "./"
+      "base": "https://themindlocksyndicate.github.io/TMLS_playcards_datasets"
     }
   ],
   "defaultDeck": "main",
