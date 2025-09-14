@@ -1,20 +1,59 @@
 <?xml version="1.0" ?>
-<svg xmlns="http://www.w3.org/2000/svg" width="825" height="1200" viewBox="0 0 825 1200" preserveAspectRatio="xMidYMid meet">
-	<rect x="0" y="0" width="825" height="1200" fill="none"/>
-	<rect x="36" y="36" width="753" height="1128" rx="18" fill="none" stroke="#d7b56d" stroke-width="6"/>
-	<rect x="46" y="46" width="733" height="1108" rx="16" fill="none" stroke="#d7b56d" stroke-width="2"/>
-	<rect x="58" y="58" width="709" height="1084" rx="14" fill="none" stroke="#d7b56d" stroke-width="2"/>
-	<rect x="58" y="50" width="709" height="110" fill="none" stroke="#d7b56d" stroke-width="2"/>
-	<rect x="64" y="56" width="697" height="98" fill="none" stroke="#d7b56d" stroke-width="2"/>
-	<text id="cat_name" x="412.5" y="115.0" text-anchor="middle" style="font-family: Georgia, serif; font-weight:700; font-size:36px; fill:#d7b56d; letter-spacing:1px">{{CATEGORY}}</text>
-	<rect id="cat_symbol_slot" x="244.5" y="85.0" width="40" height="40" rx="8" fill="none" stroke="#d7b56d" stroke-width="2"/>
-	<circle cx="264.5" cy="105.0" r="15.0" fill="none" stroke="#d7b56d" stroke-width="3"/>
-	<rect x="58" y="870" width="709" height="280" fill="none" stroke="#d7b56d" stroke-width="2"/>
-	<rect x="64" y="876" width="697" height="268" fill="none" stroke="#d7b56d" stroke-width="2"/>
-	<text id="card_name" x="412.5" y="940" text-anchor="middle" style="font-family: Georgia, serif; font-weight:700; font-size:48px; fill:#d7b56d; letter-spacing:1px">{{CARD}}</text>
-	<text id="teaser1" x="412.5" y="990" text-anchor="middle" style="font-family: Georgia, serif; font-size:24px; fill:#f7f5ee">{{HINT1}}</text>
-	<text id="teaser2" x="412.5" y="1030" text-anchor="middle" style="font-family: Georgia, serif; font-size:24px; fill:#f7f5ee">{{HINT2}}</text>
-	<rect x="64" y="184" width="697" height="662" fill="none" stroke="#d7b56d" stroke-width="2"/>
-	<rect x="70" y="190" width="685" height="650" fill="none" stroke="#d7b56d" stroke-width="1"/>
-	<rect id="main_symbol_slot" x="116" y="264" width="593" height="502" fill="none" stroke="#d7b56d" stroke-width="3"/>
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="825" height="1200" viewBox="0 0 825 1200" preserveAspectRatio="xMidYMid meet">
+  <rect x="0" y="0" width="825" height="1200" fill="none"/>
+  <rect x="36" y="36" width="753" height="1128" rx="18" fill="none" stroke="#d7b56d" stroke-width="6"/>
+  <rect x="46" y="46" width="733" height="1108" rx="16" fill="none" stroke="#d7b56d" stroke-width="2"/>
+  <rect x="58" y="58" width="709" height="1084" rx="14" fill="none" stroke="#d7b56d" stroke-width="2"/>
+
+  <!-- Header balk -->
+  <rect x="58" y="50" width="709" height="110" fill="none" stroke="#d7b56d" stroke-width="2"/>
+  <rect x="64" y="56" width="697" height="98" fill="none" stroke="#d7b56d" stroke-width="2"/>
+
+  <!-- Categorie-naam -->
+  <text id="cat_name" x="412.5" y="115" text-anchor="middle"
+        style="font-family: Georgia, serif; font-weight:700; font-size:36px; fill:#d7b56d; letter-spacing:1px">
+    {{CATEGORY}}
+  </text>
+
+  <!-- Klein symbool in header (vervangt het slot) -->
+  <!-- Slot outline kan blijven staan (optioneel); ik laat ‘m staan als kader -->
+  <rect id="cat_symbol_slot" x="244.5" y="85" width="40" height="40" rx="8" fill="none" stroke="#d7b56d" stroke-width="2"/>
+  <circle cx="264.5" cy="105" r="15" fill="none" stroke="#d7b56d" stroke-width="3"/>
+  <!-- De afbeelding zelf (past binnen 40×40, centreren via preserveAspectRatio) -->
+  <image id="cat_symbol_img"
+         x="244.5" y="85" width="40" height="40"
+         href="./symbols/{{SYMBOL}}.svg"
+         xlink:href="./symbols/{{SYMBOL}}.svg"
+         preserveAspectRatio="xMidYMid meet" />
+
+  <!-- Onderste tekstvak -->
+  <rect x="58" y="870" width="709" height="280" fill="none" stroke="#d7b56d" stroke-width="2"/>
+  <rect x="64" y="876" width="697" height="268" fill="none" stroke="#d7b56d" stroke-width="2"/>
+
+  <text id="card_name" x="412.5" y="940" text-anchor="middle"
+        style="font-family: Georgia, serif; font-weight:700; font-size:48px; fill:#d7b56d; letter-spacing:1px">
+    {{CARD}}
+  </text>
+  <text id="teaser1" x="412.5" y="990" text-anchor="middle"
+        style="font-family: Georgia, serif; font-size:24px; fill:#f7f5ee">
+    {{HINT1}}
+  </text>
+  <text id="teaser2" x="412.5" y="1030" text-anchor="middle"
+        style="font-family: Georgia, serif; font-size:24px; fill:#f7f5ee">
+    {{HINT2}}
+  </text>
+
+  <!-- Groot content-venster -->
+  <rect x="64" y="184" width="697" height="662" fill="none" stroke="#d7b56d" stroke-width="2"/>
+  <rect x="70" y="190" width="685" height="650" fill="none" stroke="#d7b56d" stroke-width="1"/>
+
+  <!-- Groot symbool (vervangt main_symbol_slot) -->
+  <rect id="main_symbol_slot" x="116" y="264" width="593" height="502" fill="none" stroke="#d7b56d" stroke-width="3"/>
+  <image id="main_symbol_img"
+         x="116" y="264" width="593" height="502"
+         href="./symbols/{{SYMBOL}}.svg"
+         xlink:href="./symbols/{{SYMBOL}}.svg"
+         preserveAspectRatio="xMidYMid meet" />
 </svg>
