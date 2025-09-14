@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
-
-    <path d="M176 224v-64c0-24 16-40 32-40s32 16 32 40v64"/>
-    <path d="M240 224v-48c0-24 16-40 32-40s32 16 32 40v48"/>
-    <path d="M304 224v-32c0-24 16-40 32-40s32 16 32 40v112c0 80-56 120-112 120-64 0-112-48-112-120v-32c0-24 16-40 32-40s32 16 32 40" />
-
-</svg>
