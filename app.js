@@ -1,75 +1,18 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TMLS Card Viewer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      @keyframes slideDown { from { transform: translateY(-120%); } to { transform: translateY(0); } }
-      .slide-in { animation: slideDown 600ms ease-out forwards; }
-      .card-3d { perspective: 1200px; }
-      .flip-scene { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 700ms ease-in-out; }
-      .flip-scene.flipped { transform: rotateY(180deg); }
-      .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 1rem; overflow: hidden; }
-      .face.front { transform: rotateY(180deg); }
-      .svg-wrap { width: 100%; height: 100%; }
-      .svg-wrap svg { width: 100%; height: 100%; display: block; }
-      body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
-      background:#0b0b0d;color:#e6e3db;margin:24px}
-      .row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
-      button,input{background:#17171a;color:#e6e3db;border:1px solid #333;padding:8px 10px;border-radius:10px}
-      button:hover{border-color:#555;cursor:pointer}
-      #chat{border:1px solid #333;height:280px;overflow:auto;padding:10px;border-radius:12px;background:#0f0f12}
-      .tag{font-size:12px;opacity:.7}
-    </style>
-  </head>
-  <body class="bg-neutral-950 text-neutral-100">
-    <h1>🜁 TMLS — Live Card Room</h1>
+// app.js (pure JS – no HTML!)
+import {
+  doc, getDoc, setDoc, onSnapshot, runTransaction, serverTimestamp,
+  collection, setDoc as setSubDoc, addDoc, query, orderBy,
+  onSnapshot as onSnapMsgs, getDocs, deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
 
-  <div class="row">
-    <input id="room" placeholder="room code (e.g. tmls-7JK4)" />
-    <button id="create">Start session (hypnotist)</button>
-    <button id="join">Join room</button>
-    <span id="share" class="tag"></span>
-  </div>
+const { db, auth } = window.tmls;
+let uid = auth.currentUser?.uid ?? null;
+auth.onAuthStateChanged(u => { uid = u?.uid || null; });
 
-  <div id="admin" style="display:none" class="row">
-    <label><input type="checkbox" id="allow"> Allow subjects to draw</label>
-    <button id="reset">Reset deck</button>
-    <button id="purge">Delete chat history</button>
-  </div>
+const DECK_URL = "https://themindlocksyndicate.github.io/TMLS_playcards_datasets/datasets/cards.json";
+const baseDeck = await (await fetch(DECK_URL, { cache: "no-store" })).json();
 
-  <div class="row">
-    <button id="draw" disabled>Draw</button>
-    <div>Last card: <b id="last">—</b></div>
-    <div>Left: <b id="left">0</b></div>
-    <div>Role: <b id="role">—</b></div>
-  </div>
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
 
-  <div id="chat"></div>
-  <form id="chatForm" class="row">
-    <input id="chatInput" placeholder="Type a message…"/>
-    <button>Send</button>
-    <button id="exportMd" type="button">Export session (Markdown)</button>
-  </form>
-
-  <!-- Firebase init -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
-    import { firebaseConfig } from "./firebaseConfig.js";
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    await signInAnonymously(auth);
-    window.tmls = { app, auth, db }; // expose for app.js
-  </script>
-
-  <!-- App logic -->
-  <script type="module" src="./app.js"></script>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-</html>
+// minimal wire-up just to pass build; keep your full version here:
+console.log("TMLS viewer loaded. Deck size:", baseDeck.length);
