@@ -1,4 +1,4 @@
-// app.js — no top-level await
+// app.js — Multiplayer + Chat + Export + Hard Terminate (no TTL/Functions)
 
 import {
   doc, getDoc, setDoc, onSnapshot, runTransaction, serverTimestamp,
@@ -7,26 +7,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
 
 (async function main() {
-
-  // Session lifetime in milliseconds (change this one value)
-  const SESSION_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
-  const SESSION_REFRESH_MS = 30 * 60 * 1000; // optional auto-extend window (30 min)
-  
-  // wait for Firebase anon sign-in from index.html
   const { auth, db } = await window.tmls.ready;
 
+  // ------- Config -------
   const DECK_URL = "https://themindlocksyndicate.github.io/TMLS_playcards_datasets/datasets/cards.json";
-  const rawDeck = await (await fetch(DECK_URL, { cache: "no-store" })).json();
 
-  const norm = c => ({
-    id: c.id ?? c.card ?? c.title ?? "Card",
-    category: c.category ?? c.cat ?? "Unknown",
-    subtitle: c.subtitle ?? c?.meta?.subtitle ?? "",
-    hints: Array.isArray(c.hints) ? c.hints :
-           (c.hint ? [c.hint] : (Array.isArray(c.meta?.hints) ? c.meta.hints : []))
-  });
-  const baseDeck = rawDeck.map(norm);
-
+  // ------- Utilities -------
   function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
   function esc(s){ return (s??"").replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
   function cap(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
@@ -38,6 +24,7 @@ import {
     els.share.textContent = `Share link: ${url.toString()}`;
   }
 
+  // ------- DOM -------
   const els = {
     room: document.getElementById("room"),
     create: document.getElementById("create"),
@@ -54,11 +41,23 @@ import {
     chatInput: document.getElementById("chatInput"),
     exportMd: document.getElementById("exportMd"),
     purge: document.getElementById("purge"),
-    share: document.getElementById("share")
+    share: document.getElementById("share"),
+    end: document.getElementById("end")
   };
 
+  // ------- State -------
   let uid = auth.currentUser?.uid ?? null;
   auth.onAuthStateChanged(u => { uid = u?.uid || null; });
+
+  const rawDeck = await (await fetch(DECK_URL, { cache:"no-store" })).json();
+  const norm = c => ({
+    id: c.id ?? c.card ?? c.title ?? "Card",
+    category: c.category ?? c.cat ?? "Unknown",
+    subtitle: c.subtitle ?? c?.meta?.subtitle ?? "",
+    hints: Array.isArray(c.hints) ? c.hints :
+           (c.hint ? [c.hint] : (Array.isArray(c.meta?.hints) ? c.meta.hints : []))
+  });
+  const baseDeck = rawDeck.map(norm);
 
   let roomCode = roomCodeFromUrl();
   if (roomCode) els.room.value = roomCode;
@@ -66,7 +65,7 @@ import {
   let isHypnotist = false;
   let msgsUnsub = null;
 
-  // create
+  // ------- Create / Join -------
   els.create.onclick = async () => {
     const inputCode = els.room.value.trim();
     roomCode = inputCode || ("tmls-" + Math.random().toString(36).slice(2,6).toUpperCase());
@@ -81,10 +80,8 @@ import {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       ending: false,
-      expireAt: new Date(Date.now() + SESSION_TTL_MS), // <— parameter
       lastActivityAt: serverTimestamp()
     });
-
     await setSubDoc(doc(collection(roomRef, "participants"), uid), {
       role: "hypnotist", joinedAt: serverTimestamp()
     });
@@ -93,7 +90,6 @@ import {
     wireRoom();
   };
 
-  // join
   els.join.onclick = async () => {
     roomCode = els.room.value.trim();
     if (!roomCode) { alert("Enter room code"); return; }
@@ -111,6 +107,7 @@ import {
     wireRoom();
   };
 
+  // ------- Realtime wiring -------
   function wireRoom(){
     onSnapshot(roomRef, (snap)=>{
       const d = snap.data(); if (!d) return;
@@ -120,40 +117,72 @@ import {
       els.last.textContent = d.lastCard ? d.lastCard.id : "—";
       els.left.textContent = d.deck.length - d.deckIndex;
       els.role.textContent = isHypnotist ? "hypnotist" : "subject";
-      els.draw.disabled = (!isHypnotist && !d.subjectsCanDraw) || (d.deckIndex >= d.deck.length);
+      const locked = d.ending === true;
+      els.draw.disabled = locked || ((!isHypnotist && !d.subjectsCanDraw) || (d.deckIndex >= d.deck.length));
+      // Wire admin buttons once
+      if (els.end && !els.end._wired) { els.end.onclick = terminateSessionClient; els.end._wired = true; }
+      if (els.allow && !els.allow._wired) { els.allow.onchange = onToggleAllow; els.allow._wired = true; }
+      if (els.reset && !els.reset._wired) { els.reset.onclick = onResetDeck; els.reset._wired = true; }
+      if (els.draw && !els.draw._wired) { els.draw.onclick = drawCard; els.draw._wired = true; }
     });
-
-    // admin
-    els.allow.onchange = async (e)=>{
-      if (!isHypnotist) return;
-      await runTransaction(db, async (tx)=>{
-        const s = await tx.get(roomRef);
-        tx.update(roomRef, { subjectsCanDraw: !!e.target.checked, updatedAt: serverTimestamp(), lastActivityAt: serverTimestamp(), expireAt: new Date(Date.now() + (SESSION_REFRESH_MS || SESSION_TTL_MS)) });
-      });
-    };
-    els.reset.onclick = async ()=>{
-      if (!isHypnotist) return;
-      await runTransaction(db, async (tx)=>{
-        const s = await tx.get(roomRef);
-        tx.update(roomRef, { deck: shuffle(baseDeck.slice()), deckIndex: 0, lastCard: null, updatedAt: serverTimestamp(), lastActivityAt: serverTimestamp(), expireAt: new Date(Date.now() + (SESSION_REFRESH_MS || SESSION_TTL_MS)) });
-      });
-    };
-
-    // draw
-    els.draw.onclick = drawCard;
 
     // chat
     wireChat();
+
+    // best-effort auto-end: mark ending on tab hide (hypnotist only)
+    const markEnding = () => {
+      if (document.visibilityState === "hidden" && isHypnotist && roomRef) {
+        updateDoc(roomRef, { ending: true }).catch(()=>{});
+      }
+    };
+    document.removeEventListener("visibilitychange", markEnding);
+    document.addEventListener("visibilitychange", markEnding);
+    window.addEventListener("pagehide", () => {
+      if (isHypnotist && roomRef) updateDoc(roomRef, { ending: true }).catch(()=>{});
+    }, { once: true });
   }
 
+  async function onToggleAllow(e){
+    if (!isHypnotist) return;
+    await runTransaction(db, async (tx)=>{
+      const s = await tx.get(roomRef);
+      tx.update(roomRef, {
+        subjectsCanDraw: !!e.target.checked,
+        updatedAt: serverTimestamp(),
+        lastActivityAt: serverTimestamp()
+      });
+    });
+  }
+
+  async function onResetDeck(){
+    if (!isHypnotist) return;
+    await runTransaction(db, async (tx)=>{
+      const s = await tx.get(roomRef);
+      tx.update(roomRef, {
+        deck: shuffle(baseDeck.slice()),
+        deckIndex: 0,
+        lastCard: null,
+        updatedAt: serverTimestamp(),
+        lastActivityAt: serverTimestamp()
+      });
+    });
+  }
+
+  // ------- Draw (& log to chat) -------
   async function drawCard(){
     let cardDrawn = null;
     await runTransaction(db, async (tx)=>{
       const s = await tx.get(roomRef);
       const d = s.data();
+      if (d.ending === true) throw new Error("Session is ending");
       if (d.deckIndex >= d.deck.length) throw new Error("Deck empty");
       cardDrawn = d.deck[d.deckIndex];
-      tx.update(roomRef, { deckIndex: d.deckIndex + 1, lastCard: cardDrawn, updatedAt: serverTimestamp(), lastActivityAt: serverTimestamp(), expireAt: new Date(Date.now() + (SESSION_REFRESH_MS || SESSION_TTL_MS)) });
+      tx.update(roomRef, {
+        deckIndex: d.deckIndex + 1,
+        lastCard: cardDrawn,
+        updatedAt: serverTimestamp(),
+        lastActivityAt: serverTimestamp()
+      });
     });
 
     await addDoc(collection(roomRef, "messages"), {
@@ -170,6 +199,7 @@ import {
     });
   }
 
+  // ------- Chat -------
   function wireChat(){
     if (msgsUnsub) msgsUnsub();
 
@@ -186,14 +216,21 @@ import {
       e.preventDefault();
       const text = els.chatInput.value.trim();
       if (!text) return;
-      await addDoc(msgsRef, { uid, role: isHypnotist ? "hypnotist":"subject", type:"chat", text, createdAt: serverTimestamp() });
+      await addDoc(msgsRef, {
+        uid,
+        role: isHypnotist ? "hypnotist":"subject",
+        type:"chat",
+        text,
+        createdAt: serverTimestamp()
+      });
+      // bump activity
+      updateDoc(roomRef, { lastActivityAt: serverTimestamp() }).catch(()=>{});
       els.chatInput.value = "";
-    await bumpActivity();
     };
 
     els.purge.onclick = async ()=>{
-      if (!isHypnotist) return;
-      if (!confirm("Delete all chat messages in this room?")) return;
+      if(!isHypnotist) return;
+      if(!confirm("Delete all chat messages in this room?")) return;
       const all = await getDocs(q);
       await Promise.all(all.docs.map(d=>deleteDoc(d.ref)));
     };
@@ -205,7 +242,6 @@ import {
     const el = document.createElement("div");
     const t = d.createdAt?.toDate ? d.createdAt.toDate() : new Date();
     const time = t.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-
     if (d.type === "card") {
       const hints = (d.card?.hints||[]).map(h=>`• ${esc(h)}`).join("<br>");
       el.innerHTML = `<i>[${time}] ${d.role} drew: <b>${esc(d.card.id)}</b> <span class="tag">(${esc(d.card.category)})</span>${d.card.subtitle?` — ${esc(d.card.subtitle)}`:""}</i>${hints?`<div class="tag">${hints}</div>`:""}`;
@@ -219,13 +255,11 @@ import {
   async function exportSessionMarkdown(){
     const r = await getDoc(roomRef); const room = r.data();
     const msgs = await getDocs(query(collection(roomRef,"messages"), orderBy("createdAt","asc")));
-
     const lines = [];
     const code = roomCodeFromUrl() || "local";
     lines.push(`# TMLS Play Session — Room ${code}`);
     lines.push(`*Hypnotist can always draw; subjects allowed: **${room.subjectsCanDraw ? "yes" : "no"}***`);
     lines.push("");
-
     msgs.forEach(m=>{
       const d = m.data();
       const ts = d.createdAt?.toDate ? d.createdAt.toDate() : new Date();
@@ -238,7 +272,6 @@ import {
         lines.push(`**${time}** — ${who}: ${d.text}`);
       }
     });
-
     const md = lines.join("\n");
     const blob = new Blob([md], { type:"text/markdown" });
     const a = document.createElement("a");
@@ -246,6 +279,26 @@ import {
     a.download = `tmls_session_${code}.md`;
     a.click();
     URL.revokeObjectURL(a.href);
+  }
+
+  // ------- Hard terminate (client) -------
+  async function terminateSessionClient(){
+    if (!isHypnotist || !roomRef) return;
+    if (!confirm("Really terminate this session? This deletes the room and all chat.")) return;
+    // delete subcollections
+    for (const sub of ['messages','participants']) {
+      const subRef = collection(roomRef, sub);
+      while (true) {
+        const snap = await getDocs(query(subRef, orderBy('__name__')));
+        if (snap.empty) break;
+        const dels = snap.docs.map(d => deleteDoc(d.ref));
+        await Promise.all(dels);
+        if (snap.size < 100) break;
+      }
+    }
+    await deleteDoc(roomRef);
+    alert("Session terminated.");
+    location.href = "./";
   }
 
   console.log("[TMLS] Viewer ready. Deck size:", baseDeck.length);
