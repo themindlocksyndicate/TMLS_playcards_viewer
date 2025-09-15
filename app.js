@@ -3,7 +3,7 @@
 import {
   doc, getDoc, setDoc, onSnapshot, runTransaction, serverTimestamp,
   collection, setDoc as setSubDoc, addDoc, query, orderBy,
-  onSnapshot as onSnapMsgs, getDocs, deleteDoc
+  onSnapshot as onSnapMsgs, getDocs, deleteDoc, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
 
 (async function main() {
@@ -128,19 +128,14 @@ import {
       if (!isHypnotist) return;
       await runTransaction(db, async (tx)=>{
         const s = await tx.get(roomRef);
-        tx.update(roomRef, { subjectsCanDraw: !!e.target.checked, updatedAt: serverTimestamp() });
+        tx.update(roomRef, { subjectsCanDraw: !!e.target.checked, updatedAt: serverTimestamp(), lastActivityAt: serverTimestamp(), expireAt: new Date(Date.now() + (SESSION_REFRESH_MS || SESSION_TTL_MS)) });
       });
     };
     els.reset.onclick = async ()=>{
       if (!isHypnotist) return;
       await runTransaction(db, async (tx)=>{
         const s = await tx.get(roomRef);
-        tx.update(roomRef, {
-          deck: shuffle(baseDeck.slice()),
-          deckIndex: 0,
-          lastCard: null,
-          updatedAt: serverTimestamp()
-        });
+        tx.update(roomRef, { deck: shuffle(baseDeck.slice()), deckIndex: 0, lastCard: null, updatedAt: serverTimestamp(), lastActivityAt: serverTimestamp(), expireAt: new Date(Date.now() + (SESSION_REFRESH_MS || SESSION_TTL_MS)) });
       });
     };
 
@@ -158,11 +153,7 @@ import {
       const d = s.data();
       if (d.deckIndex >= d.deck.length) throw new Error("Deck empty");
       cardDrawn = d.deck[d.deckIndex];
-      tx.update(roomRef, {
-        deckIndex: d.deckIndex + 1,
-        lastCard: cardDrawn,
-        updatedAt: serverTimestamp()
-      });
+      tx.update(roomRef, { deckIndex: d.deckIndex + 1, lastCard: cardDrawn, updatedAt: serverTimestamp(), lastActivityAt: serverTimestamp(), expireAt: new Date(Date.now() + (SESSION_REFRESH_MS || SESSION_TTL_MS)) });
     });
 
     await addDoc(collection(roomRef, "messages"), {
@@ -197,6 +188,7 @@ import {
       if (!text) return;
       await addDoc(msgsRef, { uid, role: isHypnotist ? "hypnotist":"subject", type:"chat", text, createdAt: serverTimestamp() });
       els.chatInput.value = "";
+    await bumpActivity();
     };
 
     els.purge.onclick = async ()=>{
