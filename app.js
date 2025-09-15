@@ -7,6 +7,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
 
 (async function main() {
+
+  // Session lifetime in milliseconds (change this one value)
+  const SESSION_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+  const SESSION_REFRESH_MS = 30 * 60 * 1000; // optional auto-extend window (30 min)
+  
   // wait for Firebase anon sign-in from index.html
   const { auth, db } = await window.tmls.ready;
 
