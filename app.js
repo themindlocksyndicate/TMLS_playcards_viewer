@@ -281,25 +281,44 @@ import {
     URL.revokeObjectURL(a.href);
   }
 
-  // ------- Hard terminate (client) -------
+
   async function terminateSessionClient(){
-    if (!isHypnotist || !roomRef) return;
-    if (!confirm("Really terminate this session? This deletes the room and all chat.")) return;
-    // delete subcollections
-    for (const sub of ['messages','participants']) {
+  if (!isHypnotist || !roomRef) return;
+  if (!confirm("Really terminate this session? This deletes the room and all chat.")) return;
+
+  let hadError = false;
+
+  // subcollecties in batches
+  for (const sub of ['messages','participants']) {
+    try {
       const subRef = collection(roomRef, sub);
       while (true) {
-        const snap = await getDocs(query(subRef, orderBy('__name__')));
+        const snap = await getDocs(query(subRef, orderBy('__name__'), /*limit?*/ ));
         if (snap.empty) break;
-        const dels = snap.docs.map(d => deleteDoc(d.ref));
-        await Promise.all(dels);
-        if (snap.size < 100) break;
+        await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+        if (snap.size < 200) break; // pas aan als je limit toevoegt
       }
+    } catch (e) {
+      hadError = true;
+      console.error(`[Terminate] Failed deleting ${sub}:`, e);
     }
-    await deleteDoc(roomRef);
-    alert("Session terminated.");
-    location.href = "./";
   }
+
+  // probeer de room zelf altijd te verwijderen
+  try {
+    await deleteDoc(roomRef);
+  } catch (e) {
+    hadError = true;
+    console.error('[Terminate] Failed deleting room:', e);
+    alert('Could not delete room document (check rules & console).');
+    return;
+  }
+
+  alert(hadError ? 'Session terminated (with some cleanup errors — see console).'
+                 : 'Session terminated.');
+  location.href = "./";
+}
+
 
   console.log("[TMLS] Viewer ready. Deck size:", baseDeck.length);
 })();
