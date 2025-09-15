@@ -37,6 +37,7 @@
     <label><input type="checkbox" id="allow"> Allow subjects to draw</label>
     <button id="reset">Reset deck</button>
     <button id="purge">Delete chat history</button>
+    <button id="end">Terminate session</button>
   </div>
 
   <div class="row">
@@ -53,26 +54,29 @@
     <button id="exportMd" type="button">Export session (Markdown)</button>
   </form>
 
-  <!-- Firebase init -->
+  <!-- Firebase init + App Check (replace SITE_KEY) -->
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
-  import { firebaseConfig } from "./firebaseConfig.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getAuth, signInAnonymously, onIdTokenChanged } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+    import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app-check.js";
+    import { firebaseConfig } from "./firebaseConfig.js";
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  // create a readiness Promise instead of top-level await
-  const ready = signInAnonymously(auth).then(() => ({ app, auth, db }));
+    // App Check — put your real site key here (or remove this block if not using App Check yet)
+    const appCheck = initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider('RECAPTCHA_V3_SITE_KEY'),
+      isTokenAutoRefreshEnabled: true
+    });
 
-  // expose both the objects and the readiness promise
-  window.tmls = { app, auth, db, ready };
-</script>
+    const ready = signInAnonymously(auth).then(() => ({ app, auth, db }));
+    window.tmls = { app, auth, db, ready };
+  </script>
 
-
-  <!-- App logic (vanilla)  -->
+  <!-- App logic (vanilla) -->
   <script type="module" src="./app.js"></script>
 </body>
 </html>
