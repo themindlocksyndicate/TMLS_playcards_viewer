@@ -78,8 +78,13 @@ import {
       hypnotistUid: uid,
       subjectsCanDraw: false,
       deck, deckIndex: 0, lastCard: null,
-      createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      ending: false,
+      expireAt: new Date(Date.now() + SESSION_TTL_MS), // <— parameter
+      lastActivityAt: serverTimestamp()
     });
+
     await setSubDoc(doc(collection(roomRef, "participants"), uid), {
       role: "hypnotist", joinedAt: serverTimestamp()
     });
