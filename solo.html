@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TMLS — Solo Quick Draw</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="./styles/app.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script type="module" src="./src/solo/main.js"></script>
+</head>
+<body>
+  <div id="noise"></div>
+
+  <header class="wrap header">
+    <div class="brand"><div class="logo-dot"></div><a class="brand-text" href="./">TMLS</a></div>
+    <nav class="nav"><a href="./">Home</a><a href="./decks">Decks</a></nav>
+  </header>
+
+  <main class="wrap solo">
+    <!-- LEFT: CARD -->
+    <section>
+      <h1 class="title">Solo Quick Draw</h1>
+      <p class="lead">A private draw for inspiration, self-hypnosis, or individual play.</p>
+      <div class="card-host" id="cardHost"></div>
+      <div id="meta" class="meta"></div>
+      <h2 class="subtitle">Your recent draws</h2>
+      <div id="history" class="history"></div>
+    </section>
+
+    <!-- RIGHT: CONTROLS -->
+    <aside class="panel">
+      <h2>Options</h2>
+      <label class="field">
+        <span>Deck</span>
+        <select id="deckSel" class="select"></select>
+      </label>
+      <label class="field">
+        <span>Category</span>
+        <select id="catSel" class="select"><option value="">All categories</option></select>
+      </label>
+      <div class="actions">
+        <button id="drawBtn" class="btn btn-primary">Draw</button>
+        <button id="saveBtn" class="btn btn-outline" disabled>Save PNG</button>
+      </div>
+      <div class="permalink">
+        <button id="copyLinkBtn" class="btn btn-ghost" disabled>Copy Permalink</button>
+        <code id="permaOut"></code>
+      </div>
+      <p class="lead" style="font-size:13px;margin-top:10px">
+        Permalink includes deck, category, and a hidden seed so anyone opening it will see the <b>same card once</b>.
+      </p>
+    </aside>
+  </main>
+
+  <footer class="wrap footer">Local only — nothing is sent to a server in Solo mode.</footer>
+</body>
+</html>

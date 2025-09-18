@@ -1,82 +1,123 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TMLS Card Viewer</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @keyframes slideDown { from { transform: translateY(-120%);} to { transform: translateY(0);} }
-    .slide-in{animation:slideDown 600ms ease-out forwards;}
-    .card-3d{perspective:1200px;}
-    .flip-scene{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform 700ms ease-in-out;}
-    .flip-scene.flipped{transform:rotateY(180deg);}
-    .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:1rem;overflow:hidden;}
-    .face.front{transform:rotateY(180deg);}
-    .svg-wrap{width:100%;height:100%;}
-    .svg-wrap svg{width:100%;height:100%;display:block;}
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;background:#0b0b0d;color:#e6e3db;margin:24px}
-    .row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
-    button,input{background:#17171a;color:#e6e3db;border:1px solid #333;padding:8px 10px;border-radius:10px}
-    button:hover{border-color:#555;cursor:pointer}
-    #chat{border:1px solid #333;height:280px;overflow:auto;padding:10px;border-radius:12px;background:#0f0f12}
-    .tag{font-size:12px;opacity:.7}
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>TMLS Card Viewer</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0b0b0f;--panel:#14141a;--text:#f4f1e8;--muted:#b9b2a5;--gold:#d7b56d}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Helvetica Neue',Arial,sans-serif;color:var(--text);background:var(--bg)}
+.wrap{max-width:1100px;margin:0 auto;padding:20px}
+.header{display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px}
+.logo-dot{width:10px;height:10px;background:var(--gold);border-radius:50%;box-shadow:0 0 10px rgba(215,181,109,.6)}
+.brand-text{font-family:Cinzel,serif;letter-spacing:.6px}
+.nav{display:flex;gap:16px}.nav a{color:var(--muted);text-decoration:none}.nav a:hover{color:var(--text)}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:center;padding-top:30px;padding-bottom:40px}
+.title{font-family:Cinzel,serif;font-weight:700;letter-spacing:.5px;line-height:1.15}.title .accent{color:var(--gold)}
+.lead{color:var(--muted);max-width:48ch}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:14px;font-weight:600;border:1px solid transparent;text-decoration:none;cursor:pointer}
+.btn-primary{background:var(--gold);color:#1a1200}
+.btn-outline{border-color:var(--gold);color:var(--gold);background:transparent}
+.btn-ghost{color:var(--muted);background:transparent;border-color:transparent}
+.features{margin-top:18px;color:var(--muted)}.features li{margin:6px 0}
+.hero-right{display:flex;flex-direction:column;align-items:center}.demo-tip{color:var(--muted);margin-top:10px}
+.demo-wrap{position:relative;width:340px;height:500px}
+.card{position:absolute;inset:0;perspective:1200px}
+.card-inner{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.card.flipped .card-inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:18px;overflow:hidden;backface-visibility:hidden;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+.face img{width:100%;height:100%;object-fit:cover;display:block}
+.face.front{transform:rotateY(180deg)}
+/* Overlay content on the front template */
+.overlay{position:absolute;inset:0;pointer-events:none}
+.cat{position:absolute;top:18px;left:22px;color:#cfc6b1;letter-spacing:.08em;text-transform:uppercase;font-size:12px}
+.sym{position:absolute;top:16px;right:22px;color:var(--gold);font-size:20px;text-shadow:0 3px 6px rgba(215,181,109,.3)}
+.name{position:absolute;top:120px;left:0;right:0;text-align:center;font-family:Cinzel,serif;font-size:26px}
+.sub{position:absolute;top:160px;left:40px;right:40px;text-align:center;color:#bfb6a3}
+.hints{position:absolute;left:26px;right:26px;bottom:24px;display:grid;gap:6px}
+.hints div{font-size:14px;color:#e7e0ce}
+
+/* Subtle gold border glow to keep the fancy vibe */
+.face::after{content:"";position:absolute;inset:12px;border-radius:14px;border:2px solid var(--gold);box-shadow:inset 0 0 26px rgba(215,181,109,.18)}
+/* Static noise overlay (SVG data URI, no external asset) */
+#noise{position:fixed;inset:0;pointer-events:none;opacity:.07;mix-blend-mode:soft-light;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width=\"1200\" height=\"800\"><filter id=\"n\"><feTurbulence type=\"fractalNoise\" baseFrequency=\"0.9\" numOctaves=\"2\" seed=\"3\"/><feColorMatrix type=\"saturate\" values=\"0\"/></filter><rect width=\"100%\" height=\"100%\" filter=\"url(%23n)\" opacity=\"0.35\"/></svg>')}
+@media(max-width:940px){.hero{grid-template-columns:1fr;gap:20px}.hero-right{order:-1}}
+</style>
 </head>
-<body class="bg-neutral-950 text-neutral-100">
-  <h1>🜁 TMLS — Live Card Room</h1>
+<body>
+  <div id="noise"></div>
 
-  <div class="row">
-    <input id="room" placeholder="room code (e.g. tmls-7JK4)" />
-    <button id="create">Start session (hypnotist)</button>
-    <button id="join">Join room</button>
-    <span id="share" class="tag"></span>
-  </div>
+  <header class="wrap header">
+    <div class="brand"><div class="logo-dot"></div><span class="brand-text">The Mind Lock Syndicate</span></div>
+    <nav class="nav"><a href="./decks">Decks</a><a href="./about">About</a></nav>
+  </header>
 
-  <div id="admin" style="display:none" class="row">
-    <label><input type="checkbox" id="allow"> Allow subjects to draw</label>
-    <button id="reset">Reset deck</button>
-    <button id="purge">Delete chat history</button>
-    <button id="end">Terminate session</button>
-  </div>
+  <main class="wrap hero">
+    <section class="hero-left">
+      <h1 class="title">Draw a hypnotic card — <span class="accent">live or solo</span>.</h1>
+      <p class="lead">Public, synchronized draws with built-in chat — or a private, beautiful draw for yourself.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="./solo.html">Draw a Card (Solo)</a>
+        <a class="btn btn-outline" href="./join">Join a Room</a>
+        <a class="btn btn-ghost" href="./rooms/new">Start a Session</a>
+        <a class="btn btn-ghost" href="./demo">Try a Demo</a>
+      </div>
+      <ul class="features">
+        <li>Realtime rooms with anti-cheat seed+hash</li>
+        <li>Built-in chat & presence</li>
+        <li>Offline solo draws with PNG export</li>
+      </ul>
+    </section>
 
-  <div class="row">
-    <button id="draw" disabled>Draw</button>
-    <div>Last card: <b id="last">—</b></div>
-    <div>Left: <b id="left">0</b></div>
-    <div>Role: <b id="role">—</b></div>
-  </div>
+    <section class="hero-right">
+      <div class="demo-wrap">
+        <div class="card" id="demoCard" aria-label="Animated card demo">
+          <div class="card-inner">
+            <div class="face back"><img id="demoBack" alt="Card back" src="./templates/back.svg"/></div>
+            <div class="face front">
+              <img id="demoFront" alt="Card front" src="./templates/front.svg"/>
+              <div class="overlay">
+                <div class="cat">Induction</div>
+                <div class="sym">☿</div>
+                <div class="name">Hidden Path</div>
+                <div class="sub">Casual words that bend you.</div>
+                <div class="hints">
+                  <div>“It sounds harmless…”</div>
+                  <div>“You were already following.”</div>
+                  <div>“Door opens inside.”</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="demo-tip">Click the card to flip.</p>
+    </section>
+  </main>
 
-  <div id="chat"></div>
-  <form id="chatForm" class="row">
-    <input id="chatInput" placeholder="Type a message…"/>
-    <button>Send</button>
-    <button id="exportMd" type="button">Export session (Markdown)</button>
-  </form>
+  <footer class="wrap" style="opacity:.8;color:var(--muted);padding-bottom:30px">
+    © TMLS — Draws are public in rooms; solo draws stay on your device.
+  </footer>
 
-  <!-- Firebase init + App Check (replace SITE_KEY) -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-    import { getAuth, signInAnonymously, onIdTokenChanged } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
-    import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app-check.js";
-    import { firebaseConfig } from "./firebaseConfig.js";
+    const TEMPLATE_BACK = './templates/back.svg';
+    const TEMPLATE_FRONT = './templates/front.svg';
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    const card = document.getElementById('demoCard');
+    const back = document.getElementById('demoBack');
+    const front = document.getElementById('demoFront');
 
-    // App Check — put your real site key here (or remove this block if not using App Check yet)
-    const appCheck = initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider('6LdKQ8orAAAAABvTQ7xo-xZK_ZjpVC9Z_58twRGx'),
-      isTokenAutoRefreshEnabled: true
+    // Ensure correct images are loaded
+    back.src = TEMPLATE_BACK;
+    front.src = TEMPLATE_FRONT;
+
+    card.addEventListener('click', () => {
+      card.classList.toggle('flipped'); // back → front
     });
-
-    const ready = signInAnonymously(auth).then(() => ({ app, auth, db }));
-    window.tmls = { app, auth, db, ready };
   </script>
-
-  <!-- App logic (vanilla) -->
-  <script type="module" src="./app.js"></script>
 </body>
 </html>
