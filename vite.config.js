@@ -2,8 +2,6 @@
 import { defineConfig } from 'vite'
 import path from 'node:path'
 
-// Use env var when provided; otherwise auto-detect GitHub Actions to set repo path,
-// and default to '/' for local builds.
 const repoBase = '/TMLS_playcards_viewer/'
 const base =
   process.env.VITE_BASE ??
@@ -12,9 +10,14 @@ const base =
 export default defineConfig({
   base,
   server: { port: 5173 },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
+  resolve: { alias: { '@': path.resolve(__dirname, './src') } },
+  build: {
+    rollupOptions: {
+      // IMPORTANT: explicitly include all HTML entry points
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        solo: path.resolve(__dirname, 'solo.html'),
+      },
     },
   },
 })
