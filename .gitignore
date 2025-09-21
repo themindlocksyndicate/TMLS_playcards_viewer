@@ -16,3 +16,14 @@ yarn-error.log*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
+
+# >>> TMLS standard ignores
+node_modules/
+dist/
+.vite/
+.DS_Store
+.env
+.env.*
+!.env.example
+.env.local
+# <<< TMLS standard ignores
