@@ -5,6 +5,8 @@ import {
   loadTemplates,
   renderFrontSVG,
   renderBackSVG,
+  cardTemplates,
+  orderedHints,
 } from "../lib/cardTemplates.js";
 
 // ------------------------------------------------------------
@@ -293,7 +295,7 @@ function makeCardEl(card, templates) {
   backWrap.className = "absolute inset-0 w-full h-full";
   backWrap.innerHTML = renderBackSVG(templates.backText, {
     logoUrl: templates.logoUrl,
-    logoScale: 1.3, // groter logo
+    logoScale: (cardTemplates?.back?.logoScale ?? 0.72), // template-driven scale
     doorOpacity: 0.75, // iets transparanter
   });
 
