@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier -w .",
-    "test": "vitest -r"
+    "test": "vitest run"
   },
   "dependencies": {
     "firebase": "^12.3.0",
