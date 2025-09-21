@@ -22,10 +22,8 @@ service cloud.firestore {
     }
 
     match /rooms/{room} {
-      // Publicly readable room meta (can tighten later)
       allow read: if true;
 
-      // Create a room: creator becomes hypnotist; defaults locked
       allow create: if request.auth != null
         && request.resource.data.hypnotistUid == request.auth.uid
         && request.resource.data.keys().hasOnly(['hypnotistUid','deckIndex','subjectsCanDraw','ending','createdAt'])
@@ -34,7 +32,6 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time
         && request.resource.data.deckIndex is int;
 
-      // Only hypnotist may flip switches while room open
       allow update: if request.auth != null
         && isHypnotist(room, request.auth.uid)
         && request.resource.data.keys().hasOnly(['hypnotistUid','deckIndex','subjectsCanDraw','ending','createdAt'])
@@ -44,14 +41,11 @@ service cloud.firestore {
         && (request.resource.data.subjectsCanDraw is bool)
         && !roomEnding(room);
 
-      // Hypnotist may delete
       allow delete: if request.auth != null && isHypnotist(room, request.auth.uid);
 
       match /participants/{uid} {
-        // Only members and hypnotist can see roster
         allow read: if (request.auth != null) && (isParticipant(room, request.auth.uid) || isHypnotist(room, request.auth.uid));
 
-        // Join as subject while room open
         allow create: if request.auth != null
           && request.auth.uid == uid
           && roomExists(room) && !roomEnding(room)
@@ -59,7 +53,6 @@ service cloud.firestore {
           && request.resource.data.role == 'subject'
           && request.resource.data.joinedAt == request.time;
 
-        // Self can change displayName; hypnotist can moderate role/muted/banned
         allow update: if request.auth != null && (
             (request.auth.uid == uid
               && request.resource.data.keys().hasOnly(['role','displayName','joinedAt'])
@@ -71,7 +64,6 @@ service cloud.firestore {
             )
           );
 
-        // Leave or kicked
         allow delete: if request.auth != null && (request.auth.uid == uid || isHypnotist(room, request.auth.uid));
       }
 
