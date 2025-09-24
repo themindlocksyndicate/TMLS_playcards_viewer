@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Node / Vite
 node_modules/
 dist/
@@ -49,3 +50,6 @@ dist/
 !.env.example
 .env.local
 # <<< TMLS standard ignores
+=======
+node_modules
+>>>>>>> 5bb2ff7 (fix(runtime): AppCheck dev debug + anon auth; build(tailwind): local build (rebase on latest main))

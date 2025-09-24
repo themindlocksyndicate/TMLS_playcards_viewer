@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TMLS Card Viewer</title>
+  <style>
+    @keyframes slideDown { from { transform: translateY(-120%);} to { transform: translateY(0);} }
+    .slide-in{animation:slideDown 600ms ease-out forwards;}
+    .card-3d{perspective:1200px;}
+    .flip-scene{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform 700ms ease-in-out;}
+    .flip-scene.flipped{transform:rotateY(180deg);}
+    .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:1rem;overflow:hidden;}
+    .face.front{transform:rotateY(180deg);}
+    .svg-wrap{width:100%;height:100%;}
+    .svg-wrap svg{width:100%;height:100%;display:block;}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;background:#0b0b0d;color:#e6e3db;margin:24px}
+    .row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+    button,input{background:#17171a;color:#e6e3db;border:1px solid #333;padding:8px 10px;border-radius:10px}
+    button:hover{border-color:#555;cursor:pointer}
+    #chat{border:1px solid #333;height:280px;overflow:auto;padding:10px;border-radius:12px;background:#0f0f12}
+    .tag{font-size:12px;opacity:.7}
+  </style>
+  <script type="module" crossorigin src="/TMLS_playcards_viewer/assets/index-DEy9a4Op.js"></script>
+  <link rel="stylesheet" crossorigin href="/TMLS_playcards_viewer/assets/index-C6G_3qQV.css">
+</head>
+<body class="bg-neutral-950 text-neutral-100">
+  <h1>🜁 TMLS — Live Card Room</h1>
+
+  <div class="row">
+    <input id="room" placeholder="room code (e.g. tmls-7JK4)" />
+    <button id="create">Start session (hypnotist)</button>
+    <button id="join">Join room</button>
+    <span id="share" class="tag"></span>
+  </div>
+
+  <div id="admin" style="display:none" class="row">
+    <label><input type="checkbox" id="allow"> Allow subjects to draw</label>
+    <button id="reset">Reset deck</button>
+    <button id="purge">Delete chat history</button>
+    <button id="end">Terminate session</button>
+  </div>
+
+  <div class="row">
+    <button id="draw" disabled>Draw</button>
+    <div>Last card: <b id="last">—</b></div>
+    <div>Left: <b id="left">0</b></div>
+    <div>Role: <b id="role">—</b></div>
+  </div>
+
+  <div id="chat"></div>
+  <form id="chatForm" class="row">
+    <input id="chatInput" placeholder="Type a message…"/>
+    <button>Send</button>
+    <button id="exportMd" type="button">Export session (Markdown)</button>
+  </form>
+
+  <!-- Firebase init + App Check (replace SITE_KEY) -->
+
+  <!-- App logic (vanilla) -->
+</body>
+</html>

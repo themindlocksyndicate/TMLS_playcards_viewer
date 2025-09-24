@@ -17,6 +17,7 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+<<<<<<< HEAD
     "@eslint/css": "^0.11.0",
     "@eslint/js": "^9.36.0",
     "@eslint/json": "^0.13.2",
@@ -32,5 +33,11 @@
     "tailwindcss": "^4.1.13",
     "vite": "^5.4.0",
     "vitest": "^3.2.4"
+=======
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.13",
+    "vite": "^5.4.0"
+>>>>>>> 5bb2ff7 (fix(runtime): AppCheck dev debug + anon auth; build(tailwind): local build (rebase on latest main))
   }
 }
