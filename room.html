@@ -1,0 +1,106 @@
+<!-- /room.html -->
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>TMLS · Room</title>
+    <link rel="icon" href="/favicon.ico" />
+    <!-- Tailwind wordt al via Vite binnengetrokken -->
+  </head>
+  <body class="bg-[#0a0a0a] text-[#e9d8a6]">
+    <!-- TOPBAR -->
+    <header
+      class="px-4 py-3 border-b border-yellow-700/30 bg-black/40 flex items-center justify-between"
+    >
+      <a href="/" class="text-sm opacity-80 hover:opacity-100 transition"
+        >← Home</a
+      >
+      <div class="text-sm opacity-80">
+        Room: <span id="roomCodeLabel" class="font-semibold"></span>
+      </div>
+      <div class="text-xs opacity-60">TMLS Multiplayer</div>
+    </header>
+
+    <!-- 3 KOLOMMEN: links controls/players, midden chat, rechts card table -->
+    <div
+      class="h-[calc(100dvh-56px-56px)] md:h-[calc(100vh-56px-56px)] grid grid-rows-[1fr] grid-cols-1 md:grid-cols-[260px_420px_1fr]"
+    >
+      <!-- LEFT: controls + logo + players -->
+      <aside
+        class="border-yellow-700/30 bg-black/30 border-b md:border-b-0 md:border-r flex flex-col"
+      >
+        <!-- Controls -->
+        <div class="p-3 space-y-2 border-b border-yellow-700/20">
+          <button
+            id="inviteBtn"
+            class="w-full px-3 py-1.5 rounded-xl border border-yellow-700/50 hover:bg-yellow-700/10 text-sm"
+          >
+            Invite
+          </button>
+          <div class="flex gap-2">
+            <button
+              id="deckBtn"
+              class="flex-1 px-3 py-1.5 rounded-xl border border-yellow-700/50 hover:bg-yellow-700/10 text-sm"
+            >
+              Deck
+            </button>
+            <button
+              id="endBtn"
+              class="flex-1 px-3 py-1.5 rounded-xl border border-yellow-700/50 hover:bg-yellow-700/10 text-sm"
+            >
+              End Room
+            </button>
+          </div>
+        </div>
+
+        <!-- Logo slot -->
+        <div class="p-3 border-b border-yellow-700/20">
+          <div
+            class="aspect-[2/1] w-full rounded-xl border border-yellow-700/30 grid place-items-center bg-black/30"
+          >
+            <img
+              src="/logo.svg"
+              alt="Mindlock Syndicate"
+              class="w-1/1 h-auto opacity-100 select-none pointer-events-none"
+            />
+          </div>
+        </div>
+
+        <!-- Players mount (ID MOET #players blijven voor JS) -->
+        <div class="flex-1 overflow-auto">
+          <div id="players" class="min-h-full"></div>
+        </div>
+      </aside>
+
+      <!-- MIDDLE: chat (ID #chat blijft gelijk) -->
+      <aside
+        id="chat"
+        class="border-yellow-700/30 bg-black/20 border-b md:border-b-0 md:border-r overflow-hidden"
+      ></aside>
+
+      <!-- RIGHT: card table (ID #table blijft gelijk) -->
+      <main id="table" class="relative overflow-hidden"></main>
+    </div>
+
+    <!-- FOOTER: status -->
+    <footer
+      class="px-4 py-2 border-t border-yellow-700/30 bg-black/40 flex items-center justify-between"
+    >
+      <div class="flex items-center gap-3 text-sm">
+        <span class="opacity-80">Status:</span>
+        <span
+          id="statusDot"
+          class="inline-block w-2 h-2 rounded-full bg-zinc-600"
+        ></span>
+        <span id="statusText" class="opacity-70">Idle</span>
+      </div>
+      <div class="text-xs opacity-60">TMLS</div>
+    </footer>
+
+    <script type="module" src="/src/main-multi.js"></script>
+  </body>
+</html>

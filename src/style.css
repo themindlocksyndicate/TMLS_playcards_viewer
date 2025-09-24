@@ -1,0 +1,85 @@
+/* src/style.css */
+@import "tailwindcss";
+@reference "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  @apply bg-[#0a0a0a] text-[#e9d8a6];
+}
+
+.btn {
+  @apply px-3 py-1 rounded-xl border text-sm
+         border-[rgb(217_180_99_/_0.50)]
+         hover:bg-[rgb(217_180_99_/_0.10)];
+}
+.card {
+  @apply rounded-2xl bg-black/20 border
+         border-[rgb(217_180_99_/_0.20)]
+         shadow-[0_0_40px_rgba(217,180,99,0.25)]; /* ⬅️ vervangt shadow-glow */
+}
+/* Card visuals */
+.ct-back {
+  background-image: radial-gradient(
+      closest-side,
+      rgba(217, 180, 99, 0.15),
+      rgba(217, 180, 99, 0) 80%
+    ),
+    radial-gradient(
+      closest-side,
+      rgba(217, 180, 99, 0.1),
+      rgba(217, 180, 99, 0) 80%
+    );
+  background-size: 12px 12px, 18px 18px;
+  background-position: 0 0, 9px 9px;
+  opacity: 0.8;
+}
+
+.ct-card.revealed {
+  background: rgba(0, 0, 0, 0.5);
+  border-color: rgba(217, 180, 99, 0.6);
+  box-shadow: 0 0 40px rgba(217, 180, 99, 0.25);
+}
+
+.ct-card {
+  animation: ct-pop 0.25s ease-out;
+}
+@keyframes ct-pop {
+  from {
+    transform: scale(0.94);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+/* Zorg dat inline SVG uit front.svg netjes schaalt */
+/* src/style.css (onderaan) */
+[data-face] svg {
+  width: 100%;
+  height: 100%;
+}
+[data-back] svg {
+  width: 100%;
+  height: 100%;
+}
+/* in je globale CSS (style.css) – Tailwind’s @keyframes plugin kan ook */
+@keyframes zoomInSoft {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.animate-in {
+  animation: zoomInSoft 0.28s ease-out both;
+}

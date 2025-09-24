@@ -1,0 +1,102 @@
+<!-- /public/templates/back.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1500" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <!-- Donkere basis + vignette -->
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#0b0b0b"/>
+      <stop offset="100%" stop-color="#111111"/>
+    </linearGradient>
+    <radialGradient id="vignette" cx="50%" cy="45%" r="70%">
+      <stop offset="60%" stop-color="rgba(0,0,0,0)" />
+      <stop offset="100%" stop-color="rgba(0,0,0,0.45)" />
+    </radialGradient>
+
+    <!-- Subtiel stippenpatroon -->
+    <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.4" fill="rgba(217,180,99,0.11)"/>
+    </pattern>
+
+    <!-- Gouden gloed -->
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Guilloché lijnen (herhaald/geroteerd) -->
+    <path id="gline" d="
+      M 0 -280
+      C 120 -260, 220 -120, 240 0
+      C 260 120, 120 260, 0 280
+      C -120 260, -260 120, -240 0
+      C -220 -120, -120 -260, 0 -280 Z" />
+
+    <!-- Hoek-ornament -->
+    <path id="corner" d="M0,44 C0,18 18,0 44,0 L110,0 L110,10 L52,10 C28,10 10,28 10,52 L10,110 L0,110 Z"/>
+
+    <!-- Medaillon clip voor logo -->
+    <clipPath id="logoClip">
+      <circle cx="500" cy="750" r="330"/>
+    </clipPath>
+  </defs>
+
+  <!-- Achtergrond -->
+  <rect x="20" y="20" width="960" height="1460" rx="40" ry="40" fill="url(#bg)"/>
+  <rect x="20" y="20" width="960" height="1460" rx="40" ry="40" fill="url(#dots)" opacity="0.22"/>
+  <rect x="20" y="20" width="960" height="1460" rx="40" ry="40" fill="url(#vignette)"/>
+
+  <!-- Dubbele rand -->
+  <rect x="28" y="28" width="944" height="1444" rx="35" ry="35"
+        fill="none" stroke="#d9b463" stroke-width="6" vector-effect="non-scaling-stroke" filter="url(#glow)"/>
+  <rect x="52" y="52" width="896" height="1396" rx="28" ry="28"
+        fill="none" stroke="rgba(217,180,99,0.55)" stroke-width="3" vector-effect="non-scaling-stroke"/>
+
+  <!-- Hoekornamenten -->
+  <g fill="rgba(217,180,99,0.5)">
+    <use href="#corner" x="52" y="52"/>
+    <use href="#corner" transform="translate(948,52) scale(-1,1)"/>
+    <use href="#corner" transform="translate(52,1448) scale(1,-1)"/>
+    <use href="#corner" transform="translate(948,1448) scale(-1,-1)"/>
+  </g>
+
+  <!-- Centrale guilloché rozet -->
+  <g transform="translate(500,750)">
+    <g fill="none" stroke="#d9b463">
+      <circle r="360" stroke="rgba(217,180,99,0.35)" stroke-width="3"/>
+      <circle r="332" stroke="rgba(217,180,99,0.25)" stroke-width="2"/>
+      <circle r="302" stroke="rgba(217,180,99,0.22)" stroke-width="2"/>
+    </g>
+    <g fill="none" stroke="#d9b463" stroke-width="1.2" opacity="0.35">
+      <!-- 16 rotaties voor rijke rozet -->
+      <use href="#gline" transform="rotate(0)   scale(0.95)"/>
+      <use href="#gline" transform="rotate(11.25) scale(0.95)"/>
+      <use href="#gline" transform="rotate(22.5) scale(0.95)"/>
+      <use href="#gline" transform="rotate(33.75) scale(0.95)"/>
+      <use href="#gline" transform="rotate(45)  scale(0.95)"/>
+      <use href="#gline" transform="rotate(56.25) scale(0.95)"/>
+      <use href="#gline" transform="rotate(67.5) scale(0.95)"/>
+      <use href="#gline" transform="rotate(78.75) scale(0.95)"/>
+      <use href="#gline" transform="rotate(90)  scale(0.95)"/>
+      <use href="#gline" transform="rotate(101.25) scale(0.95)"/>
+      <use href="#gline" transform="rotate(112.5) scale(0.95)"/>
+      <use href="#gline" transform="rotate(123.75) scale(0.95)"/>
+      <use href="#gline" transform="rotate(135) scale(0.95)"/>
+      <use href="#gline" transform="rotate(146.25) scale(0.95)"/>
+      <use href="#gline" transform="rotate(157.5) scale(0.95)"/>
+      <use href="#gline" transform="rotate(168.75) scale(0.95)"/>
+    </g>
+
+    <!-- Binnenring voor logo -->
+    <circle r="330" fill="none" stroke="#d9b463" stroke-width="8" filter="url(#glow)"/>
+    <circle r="308" fill="rgba(0,0,0,0.55)" stroke="rgba(217,180,99,0.35)" stroke-width="2"/>
+  </g>
+
+  <!-- GROTE LOGO-PLAATSING (clip in medaillon) -->
+  <!-- Pas desnoods width/height aan om de schaal te tunen -->
+  <image href="{{LOGO_URL}}" x="240" y="490" width="520" height="520"
+         clip-path="url(#logoClip)" preserveAspectRatio="xMidYMid meet"/>
+
+  <!-- Fallback-monogram als er geen logo is -->
+  <g fill="#d9b463" font-family="serif" font-size="140" text-anchor="middle">
+    <text x="500" y="815" opacity="0.7">★</text>
+  </g>
+</svg>
