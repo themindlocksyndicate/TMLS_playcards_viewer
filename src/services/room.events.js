@@ -1,3 +1,7 @@
+/**
+ * Minimal event bus for room-level events.
+ * Non-breaking: legacy flows can adopt this gradually.
+ */
 const listeners = new Map(); // event -> Set<fn>
 
 export function on(event, handler) {
@@ -5,12 +9,14 @@ export function on(event, handler) {
   listeners.get(event).add(handler);
   return () => off(event, handler);
 }
+
 export function off(event, handler) {
   const set = listeners.get(event);
   if (!set) return;
   set.delete(handler);
   if (set.size === 0) listeners.delete(event);
 }
+
 export function emit(event, payload) {
   const set = listeners.get(event);
   if (!set) return;
@@ -18,5 +24,7 @@ export function emit(event, payload) {
     try { fn(payload); } catch { /* no-op */ }
   }
 }
-export const addEvent = (p) => emit('event', p);
-export const onEvents = (h) => on('event', h);
+
+// Optional shims
+export const addEvent = (payload) => emit('event', payload);
+export const onEvents = (handler) => on('event', handler);
