@@ -144,3 +144,7 @@ export function onEvents(roomCode, cb) {
     cb(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
   );
 }
+
+// --- Phase-2C.1 wrapper (keeps legacy imports working) ---
+export { sendMessage } from './room.api.js';
+
