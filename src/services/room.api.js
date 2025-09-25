@@ -9,20 +9,14 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 
-/**
- * API layer (Phase 2C)
- * New API-owned functions live here (no legacy re-export).
- * Legacy surface stays via room.js wrappers / services barrel.
- */
+/** API layer (Phase 2C) - no legacy re-export here. */
 
-/** Send a chat message to a room. */
 export async function sendMessage({ roomCode, uid, text }) {
   const db = getFirestore();
   const ref = collection(db, 'rooms', roomCode, 'messages');
   return await addDoc(ref, { uid, text, created: serverTimestamp() });
 }
 
-/** Subscribe to messages; handler(items, snapshot). */
 export function subscribeMessages(roomCode, handler, opts = {}) {
   const { limit = 200, order = 'asc' } = opts;
   const db  = getFirestore();
