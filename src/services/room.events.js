@@ -1,8 +1,3 @@
-/**
- * Minimal event bus for room-level events.
- * Non-breaking: your existing room.js events keep working;
- * this can be adopted gradually.
- */
 const listeners = new Map(); // event -> Set<fn>
 
 export function on(event, handler) {
@@ -10,14 +5,12 @@ export function on(event, handler) {
   listeners.get(event).add(handler);
   return () => off(event, handler);
 }
-
 export function off(event, handler) {
   const set = listeners.get(event);
   if (!set) return;
   set.delete(handler);
   if (set.size === 0) listeners.delete(event);
 }
-
 export function emit(event, payload) {
   const set = listeners.get(event);
   if (!set) return;
@@ -25,7 +18,5 @@ export function emit(event, payload) {
     try { fn(payload); } catch { /* no-op */ }
   }
 }
-
-// Optional shims
-export const addEvent = (payload) => emit('event', payload);
-export const onEvents  = (handler) => on('event', handler);
+export const addEvent = (p) => emit('event', p);
+export const onEvents = (h) => on('event', h);

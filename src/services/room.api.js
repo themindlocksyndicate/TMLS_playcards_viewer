@@ -9,14 +9,16 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 
-/** API layer (Phase 2C) - no legacy re-export here. */
+/** API layer (Phase 2C) — no legacy re-export here. */
 
+// Send a chat message to a room
 export async function sendMessage({ roomCode, uid, text }) {
   const db = getFirestore();
   const ref = collection(db, 'rooms', roomCode, 'messages');
   return await addDoc(ref, { uid, text, created: serverTimestamp() });
 }
 
+// Subscribe to messages; handler(items, snapshot)
 export function subscribeMessages(roomCode, handler, opts = {}) {
   const { limit = 200, order = 'asc' } = opts;
   const db  = getFirestore();
@@ -28,6 +30,6 @@ export function subscribeMessages(roomCode, handler, opts = {}) {
   );
   return onSnapshot(q, (snap) => {
     const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    try { handler(items, snap); } catch {}
+    try { handler(items, snap); } catch { /* no-op */ }
   });
 }
