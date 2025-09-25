@@ -1,14 +1,11 @@
 {
   "compilerOptions": {
-    "checkJs": false,
     "baseUrl": ".",
     "paths": {
-      "@core/*": ["src/core/*"],
-      "@ui/*": ["src/ui/*"],
       "@services/*": ["src/services/*"],
-      "@shared/*": ["src/shared/*"],
+      "@ui/*": ["src/ui/*"],
       "@lib/*": ["src/lib/*"]
     }
   },
-  "include": ["src"]
+  "exclude": ["dist", "node_modules"]
 }
