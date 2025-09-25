@@ -73,14 +73,6 @@ export async function setTyping({ roomCode, uid, isTyping }) {
 }
 
 /**
- * Chat message posten
- */
-export async function sendMessage({ roomCode, uid, text, type = "chat" }) {
-  const ref = collection(db, "rooms", roomCode, "messages");
-  await addDoc(ref, { uid, text, type, createdAt: serverTimestamp() });
-}
-
-/**
  * Live chat stream
  */
 export function onMessages(roomCode, cb) {
