@@ -9,7 +9,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 
-/** API layer (Phase 2C) — no legacy re-export here. */
+/** API layer (Phase 2C) - no legacy re-export here. */
 
 export async function sendMessage({ roomCode, uid, text }) {
   const db = getFirestore();
