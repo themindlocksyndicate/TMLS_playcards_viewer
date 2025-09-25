@@ -1,9 +1,9 @@
 /**
  * Services barrel.
- * Keeps legacy exports as-is (via './room.js'), and offers structured entry points:
- *  - api: Firestore-facing operations (currently forwarded to legacy)
- *  - events: lightweight event bus ready for adoption
+ * - legacy surface via './room.js'
+ * - new API via './room.api.js'
+ * - events bus via './room.events.js'
  */
-export * from './room.js';             // legacy surface unchanged
-export * as api from './room.api.js';  // new: structured API facade
-export * as events from './room.events.js'; // new: event bus
+export * from './room.js';
+export * as api    from './room.api.js';
+export * as events from './room.events.js';

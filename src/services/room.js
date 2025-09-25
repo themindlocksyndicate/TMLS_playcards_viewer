@@ -140,3 +140,4 @@ export function onEvents(roomCode, cb) {
 // --- Phase-2C.1 wrapper (keeps legacy imports working) ---
 export { sendMessage } from './room.api.js';
 
+export { subscribeMessages } from './room.api.js';
