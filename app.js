@@ -1,3 +1,5 @@
+import "./src/styles/tailwind.css";
+import "./src/services/startupFirebase.js";
 // app.js — Multiplayer + Chat + Export + Hard Terminate (no TTL/Functions)
 
 import {
