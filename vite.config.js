@@ -1,12 +1,16 @@
 import { defineConfig } from 'vite';
 
-// Small, focused aliases for readability and safer refactors.
 export default defineConfig({
-  resolve: {
-    alias: {
-      '@services': '/src/services',
-      '@ui': '/src/ui',
-      '@lib': '/src/lib',
-    },
+  // Important for GitHub Pages under /TMLS_playcards_viewer/
+  base: '/TMLS_playcards_viewer/',
+  build: {
+    rollupOptions: {
+      input: {
+        index: 'index.html',
+        solo:  'solo.html',
+        room:  'room.html',
+      }
+    }
   },
+  // Dev still works: Vite dev ignores base.
 });
