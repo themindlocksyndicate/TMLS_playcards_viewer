@@ -34,3 +34,22 @@ export function subscribeMessages(roomCode, handler, opts = {}) {
     try { handler(items, snap); } catch { /* no-op */ }
   });
 }
+
+// --- minimal create/join to wire homepage buttons ---
+import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+
+export async function createRoom({ code, hostUid }) {
+  const db = getFirestore();
+  const ref = doc(db, 'rooms', code);
+  await setDoc(ref, { code, hostUid, created: serverTimestamp() }, { merge: true });
+  return { code };
+}
+
+export async function joinRoom({ code, uid }) {
+  const db = getFirestore();
+  const ref = doc(db, 'rooms', code);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) throw new Error('Room not found');
+  // Optionally write presence
+  return { code, uid };
+}

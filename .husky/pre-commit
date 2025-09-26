@@ -1,0 +1,11 @@
+#!/bin/sh
+# Husky v9+ hook — no sourcing of _/husky.sh
+
+# Block commit if backup/junk files are staged
+if git diff --cached --name-only | grep -E '\.BAK\.[^/]+$|(^|/)\\.deck-feature\.keep$'; then
+  echo "❌ Commit blocked: backup/junk files detected (*.BAK.*, .deck-feature.keep)."
+  exit 1
+fi
+
+# Uncomment if you also want to run lint-staged auto-fixes:
+# npx lint-staged

@@ -1,4 +1,5 @@
 import { loadDeck } from '@services/deckLoader.js';
+import { pickDefaultDeck } from '@config/runtime.js';
 
 /* ---------- SVG utils ---------- */
 function parseSVG(svgText) {
@@ -22,7 +23,6 @@ function setImageHrefById(doc, id, href) {
   if (isImage) {
     el.setAttribute('href', href);
   } else {
-    // replace contents with an <image> child, full-size
     while (el.firstChild) el.removeChild(el.firstChild);
     const img = doc.createElementNS('http://www.w3.org/2000/svg', 'image');
     img.setAttribute('href', href);
@@ -42,29 +42,20 @@ function applyScaleToId(doc, id, scale) {
 
 /* ---------- Core deck-aware renderers ---------- */
 async function renderSideSVG(card, sideKey, opts = {}) {
-  // prefer opts.deckId → per-card → global default / ?deck param → fallback
-  const deckId =
-    opts.deckId ||
-    card.deck ||
-    (globalThis.CURRENT_DECK_ID ??
-      new URL(globalThis.location?.href || 'http://x', globalThis.location?.origin).searchParams.get('deck')) ||
-    'tmls-classic';
-
+  const deckId = opts.deckId || card.deck || pickDefaultDeck();
   const deck = await loadDeck(deckId);
+  if (!deck) return ''; // no broken render
   const { config, templates, base } = deck;
   const sideCfg = config?.[sideKey] || {};
   const svgText = sideKey === 'front' ? templates.front : templates.back;
   const doc = parseSVG(svgText);
 
-  // 1) Text mapping: config.<side>.text = { field: { slot, optional? } }
   const cardSide = (card && card[sideKey]) || {};
   for (const [field, map] of Object.entries(sideCfg.text || {})) {
     const val = cardSide[field];
-    // no default text in absence of value (per spec)
     setTextById(doc, map.slot, val ?? '');
   }
 
-  // 2) Graphics mapping: { slot, source, fallback?, optional? }
   for (const g of sideCfg.graphics || []) {
     const perCard = cardSide.graphics?.[g.source];
     const def = config?.defaults?.graphics?.[g.source];
@@ -73,12 +64,11 @@ async function renderSideSVG(card, sideKey, opts = {}) {
       : def
       ? `${base}/${def}`
       : g.fallback
-      ? '/templates/logo.svg' // global default logo fallback
+      ? '/templates/logo.svg'
       : null;
     setImageHrefById(doc, g.slot, href);
   }
 
-  // 3) Optional logo scale on a group slot
   const scale = cardSide.logoScale ?? card.logoScale ?? config?.defaults?.logoScale;
   if (sideCfg.logoScaleSlot) applyScaleToId(doc, sideCfg.logoScaleSlot, scale);
 
@@ -92,7 +82,7 @@ export function renderBackSVG(card, opts = {}) {
   return renderSideSVG(card, 'back', opts);
 }
 
-/* ---------- Compatibility exports kept (safe defaults) ---------- */
+/* ---------- Compat exports (safe no-ops) ---------- */
 export const cardTemplates = { front: {}, back: {} };
 export function orderedHints() { return []; }
 export async function loadTemplates() { /* deck-aware now; kept for compat callers */ }

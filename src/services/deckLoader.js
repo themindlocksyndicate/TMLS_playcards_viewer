@@ -1,8 +1,10 @@
+import { DATASET_BASE, IS_DEV } from '@config/runtime.js';
+
 const cache = new Map(); // deckId -> { base, config, cards, templates:{front,back}, valid:true }
 
 /** Internal: fetch helpers */
-async function getJSON(url) { const r = await fetch(url); if (!r.ok) throw new Error(`${url} ${r.status}`); return r.json(); }
-async function getText(url) { const r = await fetch(url); if (!r.ok) throw new Error(`${url} ${r.status}`); return r.text(); }
+async function getJSON(url) { const r = await fetch(url, { cache: 'no-store' }); if (!r.ok) throw new Error(`${url} ${r.status}`); return r.json(); }
+async function getText(url) { const r = await fetch(url, { cache: 'no-store' }); if (!r.ok) throw new Error(`${url} ${r.status}`); return r.text(); }
 
 /** Validate a deck's templates + mappings + required fields. Returns an array of errors (empty if ok). */
 export function validateDeck(deck) {
@@ -18,11 +20,10 @@ export function validateDeck(deck) {
 
   const hasId = (doc, id) => !!doc?.getElementById(id);
 
-  // Slots present?
   for (const [sideKey, sideCfg] of Object.entries({ front: config.front, back: config.back })) {
     const doc = sideKey === 'front' ? frontDoc : backDoc;
     if (!doc) continue;
-    for (const [field, map] of Object.entries(sideCfg?.text || {})) {
+    for (const [, map] of Object.entries(sideCfg?.text || {})) {
       if (!hasId(doc, map.slot)) errors.push(`template:${sideKey} missing text slot "${map.slot}"`);
     }
     for (const g of sideCfg?.graphics || []) {
@@ -30,12 +31,11 @@ export function validateDeck(deck) {
     }
   }
 
-  // Required text fields present for each card (no default text per spec)
   for (const card of cards?.cards || []) {
-    for (const [field, map] of Object.entries(config.front?.text || {})) {
+    for (const [field, map] of Object.entries(deck.config.front?.text || {})) {
       if (!map.optional && (card.front?.[field] == null)) errors.push(`card ${card.code || '?'} missing front.${field}`);
     }
-    for (const [field, map] of Object.entries(config.back?.text || {})) {
+    for (const [field, map] of Object.entries(deck.config.back?.text || {})) {
       if (!map.optional && (card.back?.[field] == null)) errors.push(`card ${card.code || '?'} missing back.${field}`);
     }
   }
@@ -43,49 +43,60 @@ export function validateDeck(deck) {
   return errors;
 }
 
+/** Preferred base is the remote dataset repo; fallback to local /decks */
+function bases() {
+  return [
+    `${DATASET_BASE}`, // remote root (has /index.json and /<id>/...)
+    '/decks'           // local fallback
+  ];
+}
+
 /** Load a deck by id (returns null if invalid or failed). */
 export async function loadDeck(deckId = 'tmls-classic') {
   if (cache.has(deckId)) return cache.get(deckId);
 
-  const base = `/decks/${deckId}`;
-  try {
-    const [config, cards, front, back] = await Promise.all([
-      getJSON(`${base}/deck.config.json`),
-      getJSON(`${base}/cards.json`).catch(() => ({ deck: deckId, cards: [] })),
-      getText(`${base}/templates/front.svg`),
-      getText(`${base}/templates/back.svg`),
-    ]);
+  for (const baseRoot of bases()) {
+    const base = `${baseRoot}/${deckId}`;
+    try {
+      const [config, cards, front, back] = await Promise.all([
+        getJSON(`${base}/deck.config.json`),
+        getJSON(`${base}/cards.json`).catch(() => ({ deck: deckId, cards: [] })),
+        getText(`${base}/templates/front.svg`),
+        getText(`${base}/templates/back.svg`),
+      ]);
 
-    const deck = { base, config, cards, templates: { front, back } };
-    const errs = validateDeck(deck);
-
-    if (errs.length) {
-      if (import.meta.env.DEV) console.warn(`[deck:${deckId}] invalid:`, errs);
-      return null; // do not expose invalid decks
+      const deck = { base, config, cards, templates: { front, back } };
+      const errs = validateDeck(deck);
+      if (errs.length) {
+        if (IS_DEV) console.warn(`[deck:${deckId}] invalid:`, errs);
+        continue; // try next base
+      }
+      const ok = { ...deck, valid: true };
+      cache.set(deckId, ok);
+      return ok;
+    } catch (e) {
+      if (IS_DEV) console.warn(`[deck:${deckId}] load failed from ${base}:`, e?.message || e);
+      continue;
     }
-    const ok = { ...deck, valid: true };
-    cache.set(deckId, ok);
-    return ok;
-  } catch (e) {
-    if (import.meta.env.DEV) console.error(`[deck:${deckId}] load failed:`, e);
-    return null;
   }
+
+  return null;
 }
 
-/** Auto-list decks based on generated public/decks/index.json; returns only valid decks (after validation). */
+/** Auto-list decks from remote /index.json first, fallback to local. Only return valid. */
 export async function listDecksAuto() {
-  try {
-    const idx = await getJSON('/decks/index.json'); // created by scripts/generateDeckIndex.mjs
-    const out = [];
-    for (const entry of idx.decks || []) {
-      const deck = await loadDeck(entry.id);
-      if (deck?.valid) {
-        out.push({ id: entry.id, title: entry.title || entry.id, version: entry.version || 1 });
+  const out = [];
+  for (const baseRoot of bases()) {
+    try {
+      const idx = await getJSON(`${baseRoot}/index.json`);
+      for (const entry of idx.decks || []) {
+        const deck = await loadDeck(entry.id);
+        if (deck?.valid) out.push({ id: entry.id, title: entry.title || entry.id, version: entry.version || 1 });
       }
+      if (out.length) return out;
+    } catch (e) {
+      if (IS_DEV) console.warn('[deck-index] read failed from', baseRoot, e?.message || e);
     }
-    return out;
-  } catch (e) {
-    if (import.meta.env.DEV) console.warn('[deck-index] read failed:', e);
-    return [];
   }
+  return out; // possibly empty
 }
