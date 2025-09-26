@@ -3,13 +3,28 @@ on:
   pull_request:
   push:
     branches: [ main ]
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Fail fast if any backup/junk files are present in the repo
+      - name: "Gate: no backup/junk files"
+        run: |
+          set -euo pipefail
+          # List tracked files that match unwanted patterns
+          if git ls-files | grep -E '\.BAK\.[^/]+$|(^|/)\\.deck-feature\\.keep$' ; then
+            echo "::error::Backup/junk files detected. Remove them and update .gitignore."
+            exit 1
+          fi
+
       - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'npm' }
+        with:
+          node-version: '20'
+          cache: 'npm'
+
       - run: npm ci
       - run: npm run decks:index
       - run: npm run build
