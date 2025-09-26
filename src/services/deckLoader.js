@@ -1,4 +1,4 @@
-import { DATASET_BASE, IS_DEV } from '@config/runtime.js';
+import { DATASET_BASE, IS_DEV } from '../config/runtime.js';
 
 const cache = new Map(); // deckId -> { base, config, cards, templates:{front,back}, valid:true }
 

@@ -1,5 +1,4 @@
 import { renderCardFaces } from "./drawHelpers.js";
-import { renderCardFaces } from "@ui/drawHelpers.js";
 // src/ui/cardTable.js
 import { onEvents, addEvent, sendMessage } from "../services/room.js";
 import { loadDeckFromRepo } from "../lib/deckSource.js";
