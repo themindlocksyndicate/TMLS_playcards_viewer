@@ -383,3 +383,18 @@ if (document.readyState === 'loading') {
     mountDeckPicker();
   }
 })();
+
+// DECK_PICKER_BOOTSTRAP — mount deck picker on all pages (index/room/solo)
+(function(){
+  function mount(){
+    try {
+      import("/src/ui/deckPicker.js").then(m => {
+        const run = () => m.mountDeckPicker && m.mountDeckPicker();
+        try { run(); } catch {}
+      }).catch(() => {});
+    } catch {}
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount);
+  else mount();
+})();
+
