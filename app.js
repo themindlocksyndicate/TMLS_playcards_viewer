@@ -1,3 +1,7 @@
+import { initializeApp } from "firebase/app";
+import { ensureAnonAuth, setupAppCheck } from "@services/startupAuth.js";
+import { createRoom, joinRoom } from "@services/room.api.js";
+import { mountDeckPicker } from "@ui/deckPicker.js";
 import { mountDeckPicker } from "@ui/deckPicker.js";
 import "./src/styles/tailwind.css";
 import "@services/startupFirebase.js";
@@ -332,3 +336,50 @@ if (document.readyState === 'loading') {
 } else {
   mountDeckPicker();
 }
+
+// --- Bootstrap Firebase auth + deck picker on homepage ---
+(function bootstrapHomepage() {
+  // If your firebase config lives on window.FIREBASE_CONFIG or imported elsewhere, adapt here:
+  const cfg = globalThis.FIREBASE_CONFIG || null;
+  if (!cfg) return; // no firebase, skip
+
+  const app = initializeApp(cfg);
+  setupAppCheck(app, globalThis.FIREBASE_RECAPTCHA_SITE_KEY || "");
+  ensureAnonAuth(app).catch(() => {});
+
+  // Wire buttons if present
+  const btnStart = document.getElementById('btn-start-session');
+  const btnJoin  = document.getElementById('btn-join-room');
+  const inputCode = document.getElementById('room-code') || document.querySelector('input[name="room"]');
+
+  if (btnStart && inputCode) {
+    btnStart.addEventListener('click', async () => {
+      const code = (inputCode.value || '').trim() || Math.random().toString(36).slice(2,7);
+      try {
+        await createRoom({ code, hostUid: (globalThis.CURRENT_USER_UID || 'anon') });
+        location.href = `/room.html?room=${encodeURIComponent(code)}`;
+      } catch (e) {
+        if (import.meta.env.DEV) console.warn('start session failed', e);
+      }
+    });
+  }
+  if (btnJoin && inputCode) {
+    btnJoin.addEventListener('click', async () => {
+      const code = (inputCode.value || '').trim();
+      if (!code) return;
+      try {
+        await joinRoom({ code, uid: (globalThis.CURRENT_USER_UID || 'anon') });
+        location.href = `/room.html?room=${encodeURIComponent(code)}`;
+      } catch (e) {
+        if (import.meta.env.DEV) console.warn('join failed', e);
+      }
+    });
+  }
+
+  // Mount deck picker (shows only valid decks)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { mountDeckPicker(); });
+  } else {
+    mountDeckPicker();
+  }
+})();
