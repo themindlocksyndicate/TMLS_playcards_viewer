@@ -1,4 +1,4 @@
-import { renderFrontSVG, renderBackSVG } from '@lib/cardTemplates.js';
+import { renderFrontSVG, renderBackSVG } from '../lib/cardTemplates.js';
 
 /**
  * Renders a card into provided elements.
@@ -13,6 +13,6 @@ export async function renderCardFaces(frontEl, backEl, card, opts = {}) {
     if (frontEl) frontEl.innerHTML = front || '';
     if (backEl)  backEl.innerHTML  = back  || '';
   } catch (e) {
-    if (import.meta.env.DEV) console.warn('renderCardFaces failed', e);
+    if (import.meta.env?.DEV) console.warn('renderCardFaces failed', e);
   }
 }
