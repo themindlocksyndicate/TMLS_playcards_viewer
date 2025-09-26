@@ -1,4 +1,4 @@
-import { listDecksAuto } from '@services/deckLoader.js';
+import { listDecksAuto } from '../services/deckLoader.js';
 
 function getParam(name) {
   try {
