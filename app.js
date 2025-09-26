@@ -1,3 +1,4 @@
+import { mountDeckPicker } from "@ui/deckPicker.js";
 import "./src/styles/tailwind.css";
 import "@services/startupFirebase.js";
 // app.js — Multiplayer + Chat + Export + Hard Terminate (no TTL/Functions)
@@ -324,3 +325,10 @@ import {
 
   console.log("[TMLS] Viewer ready. Deck size:", baseDeck.length);
 })();
+
+/* Deck picker bootstrap (only valid decks; silent in prod on invalid) */
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => { mountDeckPicker(); });
+} else {
+  mountDeckPicker();
+}

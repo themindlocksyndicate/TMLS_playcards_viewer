@@ -42,7 +42,7 @@ function applyScaleToId(doc, id, scale) {
 
 /* ---------- Core deck-aware renderers ---------- */
 async function renderSideSVG(card, sideKey, opts = {}) {
-  const deckId = opts.deckId || card.deck || 'tmls-classic';
+  const deckId = opts.deckId || card.deck || (globalThis.CURRENT_DECK_ID ?? new URL(globalThis.location?.href || 'http://x', globalThis.location?.origin).searchParams.get('deck')) || 'tmls-classic';
   const deck = await loadDeck(deckId);
   const { config, templates, base } = deck;
   const sideCfg = config?.[sideKey] || {};
