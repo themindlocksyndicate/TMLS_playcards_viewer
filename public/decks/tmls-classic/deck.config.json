@@ -1,0 +1,33 @@
+{
+  "id": "tmls-classic",
+  "version": 1,
+  "defaults": {
+    "graphics": {
+      "logo": "graphics/logo.svg"
+    },
+    "logoScale": 1.0
+  },
+  "front": {
+    "template": "templates/front.svg",
+    "text": {
+      "title":    { "slot": "text:title" },
+      "subtitle": { "slot": "text:subtitle", "optional": true },
+      "flavor":   { "slot": "text:flavor",   "optional": true }
+    },
+    "graphics": [
+      { "slot": "image:logo", "source": "logo", "fallback": true }
+    ],
+    "logoScaleSlot": "group:logo"
+  },
+  "back": {
+    "template": "templates/back.svg",
+    "text": {
+      "title": { "slot": "text:title", "optional": true },
+      "notes": { "slot": "text:notes", "optional": true }
+    },
+    "graphics": [
+      { "slot": "image:logo", "source": "logo", "fallback": true }
+    ],
+    "logoScaleSlot": "group:logo"
+  }
+}

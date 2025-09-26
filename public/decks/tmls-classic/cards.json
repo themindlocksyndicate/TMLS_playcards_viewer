@@ -1,0 +1,19 @@
+{
+  "deck": "tmls-classic",
+  "cards": [
+    {
+      "code": "C-001",
+      "front": {
+        "title": "Hypnotist",
+        "subtitle": "Mind over matter",
+        "flavor": "Look into my eyes...",
+        "logoScale": 0.85,
+        "graphics": { "logo": "graphics/logo.svg" }
+      },
+      "back": {
+        "title": "Hypnotist — Lore",
+        "notes": "Whispers woven like silk."
+      }
+    }
+  ]
+}
