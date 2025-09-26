@@ -1,0 +1,109 @@
+/**
+ * Compatibility layer for card templates.
+ * Restores the exports used across the app:
+ * - loadTemplates()
+ * - renderFrontSVG(), renderBackSVG()
+ * - cardTemplates, orderedHints()
+ *
+ * This is intentionally conservative: it loads raw SVGs from /templates,
+ * does simple token replacement if tokens like {{title}} exist,
+ * and provides stable defaults for cardTemplates + orderedHints.
+ */
+
+let _cache = null;
+
+/** Load front/back SVG templates from /templates (cached). */
+export async function loadTemplates() {
+  if (_cache) return _cache;
+  const [front, back] = await Promise.all([
+    fetch('/templates/front.svg').then(r => r.text()).catch(() => ''),
+    fetch('/templates/back.svg').then(r => r.text()).catch(() => '')
+  ]);
+  _cache = { front, back };
+  return _cache;
+}
+
+/** Simple token replace: {{key}} -> map[key] (stringified). */
+function replaceTokens(svg, map = {}) {
+  if (!svg) return '';
+  return svg.replace(/\{\{(\w+)\}\}/g, (_, k) => {
+    const v = map[k];
+    return v == null ? '' : String(v);
+  });
+}
+
+/** Optionally scale a <g id="logo">… based on logoScale, if present. */
+function applyLogoScale(svg, logoScale) {
+  if (!svg || !logoScale || isNaN(logoScale)) return svg;
+  // naive: add transform on an element with id="logo" if found
+  return svg.replace(
+    /(id="logo"[^>]*)(>)/,
+    (_, pre, end) => `${pre} transform="scale(${Number(logoScale)})"${end}`
+  );
+}
+
+/** Render helpers; accept either a template string or load from cache. */
+export async function renderFrontSVG(card = {}, opts = {}) {
+  const { template } = opts;
+  const { front } = template ? { front: template } : await loadTemplates();
+  const tokenMap = {
+    title: card.title ?? card.code ?? '',
+    code: card.code ?? '',
+    category: card.category ?? '',
+    symbol: card.symbol ?? '',
+    rarity: card.rarity ?? '',
+    color: card.color ?? '',
+  };
+  let svg = replaceTokens(front, tokenMap);
+  svg = applyLogoScale(svg, card.logoScale ?? opts.logoScale);
+  return svg || front; // fall back to raw template
+}
+
+export async function renderBackSVG(card = {}, opts = {}) {
+  const { template } = opts;
+  const { back } = template ? { back: template } : await loadTemplates();
+  const tokenMap = {
+    title: card.title ?? card.code ?? '',
+    code: card.code ?? '',
+    category: card.category ?? '',
+    symbol: card.symbol ?? '',
+    rarity: card.rarity ?? '',
+    color: card.color ?? '',
+  };
+  let svg = replaceTokens(back, tokenMap);
+  svg = applyLogoScale(svg, card.logoScale ?? opts.logoScale);
+  return svg || back;
+}
+
+/**
+ * Lightweight metadata used by UI to derive hint order, etc.
+ * Adjust as needed once your concrete template metadata is known.
+ */
+export const cardTemplates = {
+  front: { hints: [] },
+  back:  { hints: [] },
+};
+
+/** Keep a stable helper for hint ordering used in UI. */
+export function orderedHints(card = {}, templateHints = []) {
+  const src = Array.isArray(card.hints) ? card.hints : [];
+  // Normalize {text:'…'} or strings to strings; follow templateHints if provided.
+  const normalized = src.map(h => (typeof h === 'string' ? h : (h?.text ?? '')))
+                        .filter(Boolean);
+  if (Array.isArray(templateHints) && templateHints.length) {
+    // Keep items that appear in templateHints first, in that order; then the rest.
+    const set = new Set(templateHints);
+    const inOrder = templateHints.filter(h => normalized.includes(h));
+    const rest = normalized.filter(h => !set.has(h));
+    return [...inOrder, ...rest];
+  }
+  return normalized;
+}
+
+export default {
+  loadTemplates,
+  renderFrontSVG,
+  renderBackSVG,
+  cardTemplates,
+  orderedHints,
+};
