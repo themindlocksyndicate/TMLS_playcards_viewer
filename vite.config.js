@@ -1,12 +1,13 @@
 import { defineConfig } from 'vite';
+import path from 'node:path';
 
-// Small, focused aliases for readability and safer refactors.
 export default defineConfig({
   resolve: {
     alias: {
-      '@services': '/src/services',
-      '@ui': '/src/ui',
-      '@lib': '/src/lib',
-    },
-  },
+      '@services': path.resolve(__dirname, 'src/services'),
+      '@lib'     : path.resolve(__dirname, 'src/lib'),
+      '@ui'      : path.resolve(__dirname, 'src/ui'),
+      '@config'  : path.resolve(__dirname, 'src/config'),
+    }
+  }
 });
