@@ -1,5 +1,5 @@
 import { loadDeck } from '@services/deckLoader.js';
-import { pickDefaultDeck } from '@config/runtime.js';
+import { pickDefaultDeck } from '../config/runtime.js';
 
 /* ---------- SVG utils ---------- */
 function parseSVG(svgText) {

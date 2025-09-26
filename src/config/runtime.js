@@ -1,21 +1,24 @@
 /**
- * Central runtime config.
- * - DATASET_BASE: where to load decks/cards from.
- *   Defaults to your dataset repo CDN (works on localhost and GitHub Pages).
- *   Can be overridden via VITE_DATASET_BASE in .env.local
+ * Central runtime config used by deck loader / renderers.
  */
 export const DATASET_BASE =
-  import.meta.env.VITE_DATASET_BASE
+  (import.meta.env && import.meta.env.VITE_DATASET_BASE)
   || 'https://cdn.jsdelivr.net/gh/themindlocksyndicate/TMLS_playcards_datasets@main';
 
-export const IS_DEV = !!import.meta.env.DEV;
+export const IS_DEV = !!(import.meta.env && import.meta.env.DEV);
 
-// Decide default deck from URL (?deck=...) or global, else tmls-classic
+/** Decide the default deck:
+ *  1) ?deck=… in URL
+ *  2) global CURRENT_DECK_ID
+ *  3) fallback 'tmls-classic'
+ */
 export function pickDefaultDeck() {
   try {
-    const u = new URL(location.href);
-    const q = u.searchParams.get('deck');
-    if (q) return q;
-  } catch {}
-  return globalThis.CURRENT_DECK_ID || 'tmls-classic';
+    const url = new URL(globalThis.location?.href || 'http://local.test');
+    return url.searchParams.get('deck')
+        || globalThis.CURRENT_DECK_ID
+        || 'tmls-classic';
+  } catch {
+    return globalThis.CURRENT_DECK_ID || 'tmls-classic';
+  }
 }
