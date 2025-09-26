@@ -9,7 +9,10 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier -w .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "decks:index": "node scripts/generateDeckIndex.mjs",
+    "predev": "npm run decks:index",
+    "prebuild": "npm run decks:index"
   },
   "dependencies": {
     "firebase": "^12.3.0",
