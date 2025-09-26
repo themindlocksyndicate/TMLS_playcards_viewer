@@ -1,4 +1,4 @@
-import { renderCardFaces } from "@ui/drawHelpers.js";
+import { renderCardFaces } from "./drawHelpers.js";
 // src/ui/chatPanel.js
 import { onMessages, sendMessage } from "../services/room.js";
 
