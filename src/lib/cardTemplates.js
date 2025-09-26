@@ -1,4 +1,4 @@
-import { loadDeck } from '@services/deckLoader.js';
+import { loadDeck } from '../services/deckLoader.js';
 import { pickDefaultDeck } from '../config/runtime.js';
 
 /* ---------- SVG utils ---------- */
