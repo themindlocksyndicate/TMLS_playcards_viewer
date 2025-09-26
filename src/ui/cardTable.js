@@ -1,3 +1,4 @@
+import { renderCardFaces } from "./drawHelpers.js";
 import { renderCardFaces } from "@ui/drawHelpers.js";
 // src/ui/cardTable.js
 import { onEvents, addEvent, sendMessage } from "../services/room.js";
@@ -328,3 +329,33 @@ function renderCardMarkdown(c) {
   }
   return lines.join("\n");
 }
+
+// DRAW_WIRING_ANCHOR — safe draw wiring (only if not already wired)
+(function(){
+  const btn = document.querySelector('[data-action=draw], #drawButton, button.draw, #draw');
+  if (!btn) return;                // no button found, do nothing
+  if (btn.dataset.wired === "1") return;
+  if (typeof btn.onclick === "function") return; // respect existing handler
+  btn.dataset.wired = "1";
+
+  btn.addEventListener("click", async () => {
+    try {
+      // Try common containers; adapt automatically to your DOM
+      const front = document.querySelector('#card-front, #front, .card-front');
+      const back  = document.querySelector('#card-back,  #back,  .card-back');
+
+      // Derive the next card from existing app state when available:
+      const card =
+        (globalThis.TMLS_NEXT_CARD && globalThis.TMLS_NEXT_CARD()) ||
+        globalThis.currentCard ||
+        { code: 'C-001', front: { title: 'Card' }, back: {} };
+
+      await renderCardFaces(front, back, card);
+
+      // Notify listeners (harmless if none)
+      document.dispatchEvent(new CustomEvent('tmls:drawn', { detail:{ card } }));
+    } catch (e) {
+      if (import.meta.env?.DEV) console.warn('draw handler failed', e);
+    }
+  });
+})();
