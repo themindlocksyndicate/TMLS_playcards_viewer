@@ -1,0 +1,14 @@
+{
+  "decks": [
+    {
+      "id": "tmls-classic",
+      "title": "tmls-classic",
+      "paths": {
+        "config": "decks/tmls-classic/deck.config.json",
+        "front": "decks/tmls-classic/templates/front.svg",
+        "back": "decks/tmls-classic/templates/back.svg"
+      },
+      "version": 1
+    }
+  ]
+}

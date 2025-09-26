@@ -42,7 +42,14 @@ function applyScaleToId(doc, id, scale) {
 
 /* ---------- Core deck-aware renderers ---------- */
 async function renderSideSVG(card, sideKey, opts = {}) {
-  const deckId = opts.deckId || card.deck || 'tmls-classic';
+  // prefer opts.deckId → per-card → global default / ?deck param → fallback
+  const deckId =
+    opts.deckId ||
+    card.deck ||
+    (globalThis.CURRENT_DECK_ID ??
+      new URL(globalThis.location?.href || 'http://x', globalThis.location?.origin).searchParams.get('deck')) ||
+    'tmls-classic';
+
   const deck = await loadDeck(deckId);
   const { config, templates, base } = deck;
   const sideCfg = config?.[sideKey] || {};
@@ -53,13 +60,11 @@ async function renderSideSVG(card, sideKey, opts = {}) {
   const cardSide = (card && card[sideKey]) || {};
   for (const [field, map] of Object.entries(sideCfg.text || {})) {
     const val = cardSide[field];
-    if (val == null && !map.optional) {
-      // leave empty; no default text per your spec
-    }
+    // no default text in absence of value (per spec)
     setTextById(doc, map.slot, val ?? '');
   }
 
-  // 2) Graphics mapping: array of { slot, source, fallback?, optional? }
+  // 2) Graphics mapping: { slot, source, fallback?, optional? }
   for (const g of sideCfg.graphics || []) {
     const perCard = cardSide.graphics?.[g.source];
     const def = config?.defaults?.graphics?.[g.source];
@@ -87,7 +92,7 @@ export function renderBackSVG(card, opts = {}) {
   return renderSideSVG(card, 'back', opts);
 }
 
-/* ---------- Compatibility exports kept (no-op/safe defaults) ---------- */
+/* ---------- Compatibility exports kept (safe defaults) ---------- */
 export const cardTemplates = { front: {}, back: {} };
 export function orderedHints() { return []; }
 export async function loadTemplates() { /* deck-aware now; kept for compat callers */ }

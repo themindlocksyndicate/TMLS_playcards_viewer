@@ -287,7 +287,7 @@ function makeCardEl(card, templates) {
   faceWrap.setAttribute("data-face", "");
   faceWrap.className =
     "absolute inset-0 flex items-center justify-center p-2 hidden";
-  faceWrap.innerHTML = renderFrontSVG(templates.frontText, card);
+  renderFrontSVG(templates.frontText, card).then(svg => { faceWrap.innerHTML = svg; });
 
   // BACK: inline SVG zodat we logo-url kunnen injecteren
   const backWrap = document.createElement("div");
