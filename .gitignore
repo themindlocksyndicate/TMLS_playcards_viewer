@@ -57,3 +57,7 @@ dist/
 # Editor/backup junk
 *.BAK.*
 .deck-feature.keep
+
+# Block editor/backup junk
+*.BAK.*
+foo.BAK.*
